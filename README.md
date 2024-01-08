@@ -17,10 +17,11 @@ S.M.A.R.T Runner is a Python script designed to automate the scheduling and exec
 - **Parallel Testing:** Specify how many disks to test simultaneously for both short and long tests.
 - **Offset Timing:** Configure waiting periods between tests to avoid overloading the system or testing too frequently.
 - **Logging:** Keep track of tests, results, and any errors in a specified log file.
-- **Email Notifications:** Receive email alerts for test failures or potential disk issues.
+- **Email Notifications:** Receive email alerts for test failures.
 - **Configurable SMTP:** Set up custom SMTP server settings for sending out email notifications.
 - **Easy Cron Integration:** Run the script as a daily cron job for hands-off operation.
 - **Intelligent Disk Detection:** Automatically detect and handle disks based on mount points if specified.
+- **Lock File:** Prevent multiple instances of the script from running simultaneously.
 
 ## Setup Requirements
 
@@ -39,7 +40,7 @@ The script is configured via a `smart-runner.conf` file. Here's an explanation o
 | Section    | Option           | Description                                                                                                                        |
 | ---------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `disks`    | (list)           | List the devices or mounts to test. Devices are listed as `/dev/sdX`. If a mount is given the disk will automatically be resolved. |
-| `database` | `file`           | Path to the file where test schedules and results are stored.                                                                      |
+| `database` | `file`           | Path to the file where test dates are stored.                                                                                      |
 | `short`    | `enabled`        | Set to `true` to enable short SMART tests.                                                                                         |
 |            | `frequency_days` | How often (in days) to run a short test on each disk.                                                                              |
 |            | `disks_per_run`  | Number of disks to test in parallel for short tests. Set to 0 for all.                                                             |
