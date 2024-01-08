@@ -72,6 +72,6 @@ The script is configured via a `smart-runner.conf` file. Here's an explanation o
    ```
 3. Schedule the script to run via a cron job (edit using `crontab -e`):
    ```console
-   0 3 * * * /path/to/smart-scheduler.py --conf=/path/to/smart-runner.conf
+   0 3 * * * /path/to/smart-runner.py --conf=/path/to/smart-runner.conf
    ```
 4. Monitor the specified log file or your email for notifications about disk health.
