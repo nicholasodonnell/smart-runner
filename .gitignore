@@ -1,0 +1,9 @@
+# python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# app
+smart-runner.conf
+smart-runner.json
+smart-runner.log

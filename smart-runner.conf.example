@@ -1,0 +1,49 @@
+; list the devices or mounts to test. Devices are listed as `/dev/sdX`. If a mount is given the disk will automatically be resolved
+[disks]
+/dev/sda
+; /dev/sdb
+; /dev/sdc
+
+[database]
+file = /var/lib/smart-runner.json
+
+; short SMART test settings (these tests typically take a few minutes)
+[short]
+; set to `true` to enable short SMART tests
+enabled = true
+; how often (in days) to run a short test on each disk
+frequency_days = 7
+; number of disks to test in parallel (set to 0 for all)
+disks_per_run = 1
+; time to wait (in days) before running a short test on a different disk
+; offset_days = 0
+
+; long SMART test settings (these tests typically take a few hours but are more thorough)
+[long]
+; set to `true` to enable long SMART tests
+enabled = true
+; how often (in days) to run a short test on each disk
+frequency_days = 90
+; number of disks to test in parallel (set to 0 for all)
+disks_per_run = 1
+; time to wait (in days) before running a short test on a different disk
+offset_days = 30
+
+[log]
+; path to the log file where execution details are recorded
+file = /var/log/smart-runner.log
+
+[email]
+; set to `true` to enable email notifications for test failures
+enabled = false
+from_email =
+to_email =
+
+[smtp]
+host =
+; leave empty for default port
+port =
+ssl = false
+tls = false
+user =
+password =
