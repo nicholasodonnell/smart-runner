@@ -8,6 +8,7 @@ from smart_runner import (
     Database,
     Disk,
     Email,
+    Lock,
     Logger,
     Message,
     NotEnabledException,
@@ -20,7 +21,6 @@ from smart_runner import (
     TooSoonException,
 )
 from sys import exit
-from traceback import print_exc
 
 
 def sendTestFailureEmail(config, logger, test, disk):
@@ -55,6 +55,7 @@ def sendTestFailureEmail(config, logger, test, disk):
 
 def main():
     try:
+        Lock()
         args = Args()
         config = Config(configFile=args.config)
         db = Database(dbFile=config.database.file)
@@ -175,7 +176,6 @@ def main():
 
     except Exception as e:
         print("Error: {}".format(e))
-        print_exc(e)
         exit(1)
 
 

@@ -7,3 +7,4 @@ __pycache__/
 smart-runner.conf
 smart-runner.json
 smart-runner.log
+.smart-runner.lock

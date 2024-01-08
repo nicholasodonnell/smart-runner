@@ -4,5 +4,6 @@ from .config import *
 from .database import *
 from .disk import *
 from .email import *
+from .lock import *
 from .logger import *
 from .test import *
