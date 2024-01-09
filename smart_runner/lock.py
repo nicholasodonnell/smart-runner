@@ -1,11 +1,11 @@
 from atexit import register
-from os import getcwd, remove
-
-LOCK_FILE_PATH = getcwd() + "/.smart-runner.lock"
+from os import remove
 
 
 class Lock:
-    def __init__(self):
+    def __init__(self, file):
+        self.file = file
+
         if self.isLocked():
             raise RuntimeError("smart-runner is already running")
 
@@ -15,18 +15,18 @@ class Lock:
         register(self.removeLock)
 
     def createLock(self):
-        with open(LOCK_FILE_PATH, "w") as lockFile:
+        with open(self.file, "w") as lockFile:
             lockFile.write("")
 
     def removeLock(self):
         try:
-            remove(LOCK_FILE_PATH)
+            remove(self.file)
         except FileNotFoundError:
             pass  # If the file is already removed or doesn't exist, ignore the error
 
     def isLocked(self):
         try:
-            with open(LOCK_FILE_PATH, "r") as lockFile:
+            with open(self.file, "r") as lockFile:
                 return True
         except FileNotFoundError:
             return False

@@ -1,9 +1,6 @@
 from .command import Command
 from enum import Enum
 from datetime import datetime, timedelta
-from os import getcwd
-
-SMART_RUNNER_PATH = getcwd() + "/smart.sh"
 
 
 class TestType(Enum):
@@ -35,6 +32,7 @@ class Test:
     def __init__(
         self,
         testType,
+        smartScriptPath,
         enabled=False,
         frequencyDays=1,
         offsetDays=0,
@@ -42,6 +40,7 @@ class Test:
         lastTestDate=None,
     ):
         self.testType = testType
+        self.smartScriptPath = smartScriptPath
         self.enabled = enabled
         self.frequencyDays = frequencyDays
         self.offsetDays = offsetDays
@@ -77,7 +76,7 @@ class Test:
         self.disks.append(disk)
 
         command = Command(
-            cmd=SMART_RUNNER_PATH + " " + self.testType.value + " " + disk.disk,
+            cmd=self.smartScriptPath + " " + self.testType.value + " " + disk.disk,
             stdout=onOutput,
             stderr=onError,
         )

@@ -21,6 +21,11 @@ from smart_runner import (
     TooSoonException,
 )
 from sys import exit
+from os import path
+
+
+SMART_SCRIPT_PATH = path.realpath(path.dirname(__file__)) + "/smart.sh"
+LOCK_FILE_PATH = path.realpath(path.dirname(__file__)) + "/.smart-runner.lock"
 
 
 def sendTestFailureEmail(config, logger, test, disk):
@@ -31,10 +36,10 @@ def sendTestFailureEmail(config, logger, test, disk):
     try:
         Email.send(
             message=Message(
-                subject="{} SMART test failed for disk {}".format(
-                    test.testType.value, disk.disk
+                subject="SMART test failed on {}".format(disk.disk),
+                body="A {} SMART test has failed on {}. Please see server logs located at {} for more details.".format(
+                    test.testType.value, disk.disk, config.log.file
                 ),
-                body="Please see server logs for more details",
                 fromEmail=config.email.from_email,
                 toEmail=config.email.to_email,
             ),
@@ -55,7 +60,7 @@ def sendTestFailureEmail(config, logger, test, disk):
 
 def main():
     try:
-        Lock()
+        Lock(LOCK_FILE_PATH)
         args = Args()
         config = Config(configFile=args.config)
         db = Database(dbFile=config.database.file)
@@ -76,6 +81,7 @@ def main():
         ]
         shortTest = Test(
             testType=TestType.SHORT,
+            smartScriptPath=SMART_SCRIPT_PATH,
             enabled=config.short.enabled,
             frequencyDays=config.short.frequency_days,
             offsetDays=config.short.offset_days,
@@ -84,6 +90,7 @@ def main():
         )
         longTest = Test(
             testType=TestType.LONG,
+            smartScriptPath=SMART_SCRIPT_PATH,
             enabled=config.long.enabled,
             frequencyDays=config.long.frequency_days,
             offsetDays=config.long.offset_days,
