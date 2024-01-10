@@ -24,11 +24,18 @@ function run_smart_test_on_disk() {
 function wait_for_test_to_finish() {
   local TEST=$1
   local DISK=$2
+  local MINS_WAITED=0
 
   while true; do
     if smartctl --all "$DISK" | grep -q "Self-test routine in progress"; then
-      echo "Waiting for $TEST SMART test to finish for $DISK..."
+
+      # print every 15 minutes
+      if [ $((MINS_WAITED % 15)) -eq 0 ]; then
+        echo "Waiting for $TEST SMART test to finish for $DISK..."
+      fi
+
       sleep 60
+      MINS_WAITED=$((MINS_WAITED + 1))
     else
       break
     fi
@@ -40,7 +47,6 @@ function get_test_result() {
   local DISK=$2
   local FULL_OUTPUT=$(smartctl --all "$DISK")
   local TEST_RESULT=$(echo "$FULL_OUTPUT" | grep "test result" | awk '{print $NF}')
-  local DATE=$(date +"%Y-%m-%dT%H:%M:%S%z")
   local RETURN_CODE
 
   if [ "$TEST_RESULT" != "PASSED" ]; then
