@@ -8,9 +8,9 @@ class Disk:
         self.lastShortTestDate = lastShortTestDate
         self.lastLongTestDate = lastLongTestDate
 
-    def __needsShortTest__(self, frequencyDays):
+    def needsShortTest(self, frequencyDays):
         try:
-            if self.lastShortTestDate is None:
+            if self.lastShortTestDate is None and self.lastLongTestDate is None:
                 return True
 
             if self.lastLongTestDate is None:
@@ -20,6 +20,9 @@ class Disk:
 
                 return datetime.now() >= nextShortTestDate
 
+            if self.lastShortTestDate is None:
+                return True
+
             nextShortTestDate = max(
                 [self.lastShortTestDate, self.lastLongTestDate]
             ) + timedelta(days=frequencyDays)
@@ -28,7 +31,7 @@ class Disk:
         except Exception as e:
             raise Exception("Failed to check if disk needs short test: {}".format(e))
 
-    def __needsLongTest__(self, frequencyDays):
+    def needsLongTest(self, frequencyDays):
         try:
             if self.lastLongTestDate is None:
                 return True
@@ -42,22 +45,36 @@ class Disk:
     def needsTest(self, test: Test):
         try:
             if test.testType == TestType.SHORT:
-                return self.__needsShortTest__(test.frequencyDays)
+                return self.needsShortTest(test.frequencyDays)
 
             if test.testType == TestType.LONG:
-                return self.__needsLongTest__(test.frequencyDays)
+                return self.needsLongTest(test.frequencyDays)
 
             return False
         except Exception as e:
             raise Exception("Failed to check if disk needs test: {}".format(e))
 
+    def getLastShortTestDate(self):
+        return (
+            datetime.strftime(self.lastShortTestDate, "%Y-%m-%d")
+            if self.lastShortTestDate is not None
+            else self.getLastLongTestDate()
+        )
+
+    def getLastLongTestDate(self):
+        return (
+            datetime.strftime(self.lastLongTestDate, "%Y-%m-%d")
+            if self.lastLongTestDate is not None
+            else None
+        )
+
     def getLastTestDateForTest(self, test: Test):
         try:
             if test.testType == TestType.SHORT:
-                return datetime.strftime(self.lastShortTestDate, "%Y-%m-%d")
+                return self.getLastShortTestDate()
 
             if test.testType == TestType.LONG:
-                return datetime.strftime(self.lastLongTestDate, "%Y-%m-%d")
+                return self.getLastLongTestDate()
 
             return None
         except Exception as e:
