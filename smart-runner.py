@@ -55,7 +55,7 @@ def sendTestFailureEmail(config, logger, test, disk):
 
         logger.info("Sent test failure email to {}".format(config.email.to_email))
     except Exception as e:
-        logger.warning("Failed to send test failure email: {}".format(e))
+        logger.warning("Error sending test failure email: {}".format(e))
 
 
 def main():
@@ -155,6 +155,7 @@ def main():
                             test.disksPerRun,
                         )
                     )
+
                     continue
                 except TooSoonException as e:
                     logger.warning(
@@ -165,6 +166,7 @@ def main():
                             test.daysSinceLastRun(),
                         )
                     )
+
                     continue
                 except TestFailedException as e:
                     logger.error(
