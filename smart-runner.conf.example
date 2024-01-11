@@ -5,7 +5,7 @@
 ; /dev/sdc
 
 [database]
-file = /var/lib/smart-runner.json
+file = /var/lib/smart-runner/smart-runner.json
 
 ; short SMART test settings (these tests typically take a few minutes)
 [short]
