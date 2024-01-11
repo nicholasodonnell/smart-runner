@@ -13,15 +13,19 @@ class Disk:
             if self.lastShortTestDate is None and self.lastLongTestDate is None:
                 return True
 
+            if self.lastShortTestDate is None:
+                nextShortTestDate = self.lastLongTestDate + timedelta(
+                    days=frequencyDays
+                )
+
+                return datetime.now() >= nextShortTestDate
+
             if self.lastLongTestDate is None:
                 nextShortTestDate = self.lastShortTestDate + timedelta(
                     days=frequencyDays
                 )
 
                 return datetime.now() >= nextShortTestDate
-
-            if self.lastShortTestDate is None:
-                return True
 
             nextShortTestDate = max(
                 [self.lastShortTestDate, self.lastLongTestDate]

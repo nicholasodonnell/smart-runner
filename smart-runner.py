@@ -105,7 +105,7 @@ def main():
         for disk in disks:
             for test in [longTest, shortTest]:
                 logger.info(
-                    "Processing {} SMART test for {}...".format(
+                    "Checking {} SMART test for {}...".format(
                         test.testType.value,
                         disk.disk,
                     )
@@ -149,7 +149,7 @@ def main():
                     continue
                 except TooManyDisksException as e:
                     logger.warning(
-                        "Can't run {} SMART test for {} {} disk(s) have already ran, skipping...".format(
+                        "Can't run {} SMART test for {} {} disk(s) have already been tested, skipping...".format(
                             test.testType.value,
                             disk.disk,
                             test.disksPerRun,

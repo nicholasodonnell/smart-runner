@@ -20,6 +20,9 @@ class Database:
 
     def __writeDbFile__(self):
         try:
+            # create dir of db file if it does not exist
+            Path(self.dbFile).parent.mkdir(parents=True, exist_ok=True)
+
             with open(self.dbFile, "w") as file:
                 dump(self.__db__, file, indent=4, sort_keys=True)
         except Exception as e:

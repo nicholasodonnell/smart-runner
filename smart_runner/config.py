@@ -30,7 +30,7 @@ class Config:
                 "database": ConfigDict(
                     {
                         "file": config.get(
-                            "database", "file", fallback="/var/lib/smart-runner.json"
+                            "database", "file", fallback="/var/lib/smart-runner/smart-runner.json"
                         ),
                     }
                 ),
