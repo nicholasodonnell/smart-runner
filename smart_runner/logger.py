@@ -3,8 +3,9 @@ from sys import stdout
 
 
 class Logger:
-    def __init__(self, logFile):
+    def __init__(self, logFile, level):
         self.logFile = logFile
+        self.level = level.upper()
         self.__logger__ = getLogger()
         self.__setupLogger__()
 
@@ -18,7 +19,7 @@ class Logger:
             stdoutHandler = StreamHandler(stdout)
             stdoutHandler.setFormatter(formatter)
 
-            self.__logger__.setLevel(DEBUG)
+            self.__logger__.setLevel(self.level)
             self.__logger__.addHandler(fileHander)
             self.__logger__.addHandler(stdoutHandler)
         except Exception as e:

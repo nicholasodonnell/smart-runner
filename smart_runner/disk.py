@@ -83,3 +83,13 @@ class Disk:
             return None
         except Exception as e:
             raise Exception("Failed to get last test date for disk: {}".format(e))
+
+    def updateLastTestDateForTest(self, test: Test):
+        try:
+            if test.testType == TestType.SHORT:
+                self.lastShortTestDate = datetime.now()
+
+            if test.testType == TestType.LONG:
+                self.lastLongTestDate = datetime.now()
+        except Exception as e:
+            raise Exception("Failed to update last test date for disk: {}".format(e))

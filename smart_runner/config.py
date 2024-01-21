@@ -69,6 +69,7 @@ class Config:
                         "file": config.get(
                             "log", "file", fallback="/var/log/smart-runner.log"
                         ),
+                        "level": config.get("log", "level", fallback="INFO"),
                     }
                 ),
                 "email": ConfigDict(

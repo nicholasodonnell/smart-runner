@@ -6,6 +6,7 @@
 
 [database]
 file = /var/lib/smart-runner/smart-runner.json
+level = INFO
 
 ; short SMART test settings (these tests typically take a few minutes)
 [short]

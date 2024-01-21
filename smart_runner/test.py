@@ -1,4 +1,3 @@
-from .command import Command
 from enum import Enum
 from datetime import datetime, timedelta
 
@@ -24,15 +23,10 @@ class TooSoonException(Exception):
     pass
 
 
-class TestFailedException(Exception):
-    pass
-
-
 class Test:
     def __init__(
         self,
         testType,
-        smartScriptPath,
         enabled=False,
         frequencyDays=1,
         offsetDays=0,
@@ -40,7 +34,6 @@ class Test:
         lastTestDate=None,
     ):
         self.testType = testType
-        self.smartScriptPath = smartScriptPath
         self.enabled = enabled
         self.frequencyDays = frequencyDays
         self.offsetDays = offsetDays
@@ -60,7 +53,7 @@ class Test:
 
         return (datetime.now() - self.lastTestDate).days
 
-    def runTestForDisk(self, disk, onOutput, onError, onFinished):
+    def enqueueForDisk(self, disk):
         if not self.enabled:
             raise NotEnabledException()
 
@@ -75,14 +68,8 @@ class Test:
 
         self.disks.append(disk)
 
-        command = Command(
-            cmd=self.smartScriptPath + " " + self.testType.value + " " + disk.disk,
-            stdout=onOutput,
-            stderr=onError,
+    def enqueuedDisks(self):
+        return sorted(
+            self.disks, key=lambda disk: disk.getLastTestDateForTest(self) or datetime.min
         )
-        status = command.exec()
 
-        onFinished()
-
-        if status != 0:
-            raise TestFailedException()
