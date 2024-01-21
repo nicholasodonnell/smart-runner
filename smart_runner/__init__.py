@@ -6,4 +6,5 @@ from .disk import *
 from .email import *
 from .lock import *
 from .logger import *
+from .smart import *
 from .test import *

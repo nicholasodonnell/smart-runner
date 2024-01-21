@@ -50,6 +50,7 @@ The script is configured via a `smart-runner.conf` file. Here's an explanation o
 |            | `disks_per_run`  | Number of disks to test in parallel for long tests. Set to 0 for all.                                                              |
 |            | `offset_days`    | Time to wait (in days) before running a long test on a different disk.                                                             |
 | `log`      | `file`           | Path to the log file where execution details are recorded.                                                                         |
+|            | `level`          | Log level. Set to `debug` for more detailed logs.                                                                                  |
 | `email`    | `enabled`        | Set to `true` to enable email notifications for test failures.                                                                     |
 |            | `from_email`     | Sender email address for notifications.                                                                                            |
 |            | `to_email`       | Recipient email address for notifications.                                                                                         |
