@@ -6,7 +6,6 @@
 
 [database]
 file = /var/lib/smart-runner/smart-runner.json
-level = INFO
 
 ; short SMART test settings (these tests typically take a few minutes)
 [short]
@@ -33,6 +32,7 @@ offset_days = 30
 [log]
 ; path to the log file where execution details are recorded
 file = /var/log/smart-runner.log
+level = INFO
 
 [email]
 ; set to `true` to enable email notifications for test failures
