@@ -1,6 +1,9 @@
 import smtplib
+import ssl
 from email.mime.text import MIMEText
 from email import charset
+
+SMTP_TIMEOUT_SECONDS = 30
 
 
 class SMTP:
@@ -43,19 +46,22 @@ class Email:
 
             charset.add_charset("utf-8", charset.SHORTEST, charset.QP)
 
+            context = ssl.create_default_context()
+
             if smtp.ssl:
-                server = smtplib.SMTP_SSL(smtp.host, smtp.port)
+                server = smtplib.SMTP_SSL(
+                    smtp.host, smtp.port, timeout=SMTP_TIMEOUT_SECONDS, context=context
+                )
             else:
-                server = smtplib.SMTP(smtp.host, smtp.port)
+                server = smtplib.SMTP(smtp.host, smtp.port, timeout=SMTP_TIMEOUT_SECONDS)
 
-            if smtp.tls:
-                server.starttls()
+            with server:
+                if smtp.tls:
+                    server.starttls(context=context)
 
-            if smtp.user and smtp.password:
-                server.login(smtp.user, smtp.password)
+                if smtp.user and smtp.password:
+                    server.login(smtp.user, smtp.password)
 
-            text = msg.as_string()
-            server.sendmail(message.fromEmail, message.toEmail, text)
-            server.quit()
+                server.sendmail(message.fromEmail, message.toEmail, msg.as_string())
         except Exception as e:
             raise Exception("Failed to send email: {}".format(e))

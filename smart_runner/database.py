@@ -1,5 +1,6 @@
 from datetime import datetime
 from json import dump, load
+from os import fsync, replace
 from pathlib import Path
 
 
@@ -20,11 +21,19 @@ class Database:
 
     def __writeDbFile__(self):
         try:
-            # create dir of db file if it does not exist
-            Path(self.dbFile).parent.mkdir(parents=True, exist_ok=True)
+            dbPath = Path(self.dbFile)
+            tmpPath = dbPath.with_name(dbPath.name + ".tmp")
 
-            with open(self.dbFile, "w") as file:
+            # create dir of db file if it does not exist
+            dbPath.parent.mkdir(parents=True, exist_ok=True)
+
+            # write to a temp file and rename it so a crash can't leave a partial db file
+            with open(tmpPath, "w") as file:
                 dump(self.__db__, file, indent=4, sort_keys=True)
+                file.flush()
+                fsync(file.fileno())
+
+            replace(tmpPath, dbPath)
         except Exception as e:
             raise Exception("Failed to write db file: {}".format(e))
 

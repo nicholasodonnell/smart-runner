@@ -20,7 +20,9 @@ class Config:
             if not path.exists(self.configFile):
                 raise Exception(self.configFile + " does not exist")
 
-            config = ConfigParser(allow_no_value=True)
+            # disk paths can contain uppercase letters and colons (e.g. /dev/disk/by-id, /dev/disk/by-path)
+            config = ConfigParser(allow_no_value=True, delimiters=("=",))
+            config.optionxform = str
             config.read(self.configFile)
 
             return {
@@ -43,7 +45,7 @@ class Config:
                             config.getint("short", "frequency_days", fallback=7), 1
                         ),
                         "disks_per_run": max(
-                            config.getint("short", "disks_per_run", fallback=1), 1
+                            config.getint("short", "disks_per_run", fallback=1), 0
                         ),
                         "offset_days": max(
                             config.getint("short", "offset_days", fallback=0), 0
@@ -57,7 +59,7 @@ class Config:
                             config.getint("long", "frequency_days", fallback=30), 1
                         ),
                         "disks_per_run": max(
-                            config.getint("long", "disks_per_run", fallback=1), 1
+                            config.getint("long", "disks_per_run", fallback=1), 0
                         ),
                         "offset_days": max(
                             config.getint("long", "offset_days", fallback=0), 0

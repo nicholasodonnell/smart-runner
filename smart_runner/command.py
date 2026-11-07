@@ -3,8 +3,8 @@ from subprocess import Popen, PIPE
 
 
 class Command:
-    def __init__(self, cmd, stdout=lambda x: None, stderr=lambda x: None):
-        self.cmd = cmd
+    def __init__(self, args, stdout=lambda x: None, stderr=lambda x: None):
+        self.args = args
         self.stdout = stdout
         self.stderr = stderr
 
@@ -19,9 +19,7 @@ class Command:
     def exec(self):
         try:
             # Start the subprocess
-            process = Popen(
-                self.cmd, stdout=PIPE, stderr=PIPE, shell=True, text=True, bufsize=1
-            )
+            process = Popen(self.args, stdout=PIPE, stderr=PIPE, text=True, bufsize=1)
 
             # Create and start threads to read stdout and stderr
             stdout_thread = threading.Thread(
@@ -44,4 +42,6 @@ class Command:
             # Return the exit code
             return process.returncode
         except Exception as e:
-            raise Exception('Failed to run command "{}": {}'.format(self.cmd, e))
+            raise Exception(
+                'Failed to run command "{}": {}'.format(" ".join(self.args), e)
+            )
