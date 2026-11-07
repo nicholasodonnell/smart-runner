@@ -12,12 +12,20 @@ class Smart:
         self.smartScriptPath = smartScriptPath
 
     def run(self, onOutput, onError):
+        errors = []
+
+        def handleError(line):
+            errors.append(line)
+            onError(line)
+
         command = Command(
-            cmd=self.smartScriptPath + " " + self.testType + " " + self.disk,
+            args=[self.smartScriptPath, self.testType, self.disk],
             stdout=onOutput,
-            stderr=onError,
+            stderr=handleError,
         )
         status = command.exec()
 
         if status != 0:
-            raise TestFailedException()
+            raise TestFailedException(
+                "\n".join(errors) or "smart.sh exited with status {}".format(status)
+            )

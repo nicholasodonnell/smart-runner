@@ -1,4 +1,4 @@
-; list the devices or mounts to test. Devices are listed as `/dev/sdX`. If a mount is given the disk will automatically be resolved
+; list the devices or mounts to test. Devices are listed as `/dev/sdX` or `/dev/disk/by-id/...`. If a mount is given the disk will automatically be resolved
 [disks]
 /dev/sda
 ; /dev/sdb
@@ -13,7 +13,7 @@ file = /var/lib/smart-runner/smart-runner.json
 enabled = true
 ; how often (in days) to run a short test on each disk
 frequency_days = 7
-; number of disks to test in parallel (set to 0 for all)
+; number of disks to test per run, one after another (set to 0 for all)
 disks_per_run = 1
 ; time to wait (in days) before running a short test on a different disk
 ; offset_days = 0
@@ -22,11 +22,11 @@ disks_per_run = 1
 [long]
 ; set to `true` to enable long SMART tests
 enabled = true
-; how often (in days) to run a short test on each disk
+; how often (in days) to run a long test on each disk
 frequency_days = 90
-; number of disks to test in parallel (set to 0 for all)
+; number of disks to test per run, one after another (set to 0 for all)
 disks_per_run = 1
-; time to wait (in days) before running a short test on a different disk
+; time to wait (in days) before running a long test on a different disk
 offset_days = 30
 
 [log]

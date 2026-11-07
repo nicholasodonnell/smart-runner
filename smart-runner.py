@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 from smart_runner import (
     Args,
@@ -29,7 +29,7 @@ SMART_SCRIPT_PATH = path.realpath(path.dirname(__file__)) + "/smart.sh"
 LOCK_FILE_PATH = path.realpath(path.dirname(__file__)) + "/.smart-runner.lock"
 
 
-def sendTestFailureEmail(config, logger, test, disk):
+def sendTestFailureEmail(config, logger, test, disk, reason):
     if not config.email.enabled:
         logger.info("Test failure email notifications are not enabled, skipping...")
         return
@@ -38,8 +38,8 @@ def sendTestFailureEmail(config, logger, test, disk):
         Email.send(
             message=Message(
                 subject="SMART test failed on {}".format(disk.disk),
-                body="A {} SMART test has failed on {}. Please see server logs located at {} for more details.".format(
-                    test.testType.value, disk.disk, config.log.file
+                body="A {} SMART test has failed on {}.\n\n{}\n\nPlease see server logs located at {} for more details.".format(
+                    test.testType.value, disk.disk, reason, config.log.file
                 ),
                 fromEmail=config.email.from_email,
                 toEmail=config.email.to_email,
@@ -61,7 +61,8 @@ def sendTestFailureEmail(config, logger, test, disk):
 
 def main():
     try:
-        Lock(LOCK_FILE_PATH)
+        # held until the process exits
+        lock = Lock(LOCK_FILE_PATH)
         args = Args()
         config = Config(configFile=args.config)
         db = Database(dbFile=config.database.file)
@@ -189,7 +190,17 @@ def main():
                     )
 
                     sendTestFailureEmail(
-                        config=config, logger=logger, test=test, disk=disk
+                        config=config, logger=logger, test=test, disk=disk, reason=e
+                    )
+                except Exception as e:
+                    logger.error(
+                        "Error running {} SMART test for {}: {}".format(
+                            test.testType.value, disk.disk, e
+                        )
+                    )
+
+                    sendTestFailureEmail(
+                        config=config, logger=logger, test=test, disk=disk, reason=e
                     )
                 finally:
                     db.updateTestDateForDisk(

@@ -69,7 +69,6 @@ class Test:
         self.disks.append(disk)
 
     def enqueuedDisks(self):
-        return sorted(
-            self.disks, key=lambda disk: disk.getLastTestDateForTest(self) or datetime.min
-        )
+        # dates are YYYY-MM-DD strings, so they sort in date order and untested disks go first
+        return sorted(self.disks, key=lambda disk: disk.getLastTestDateForTest(self) or "")
 

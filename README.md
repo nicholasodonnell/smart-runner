@@ -14,7 +14,7 @@ S.M.A.R.T Runner is a Python script designed to automate the scheduling and exec
 
 - **Automated Scheduling:** Configure once and let the script handle regular short and long S.M.A.R.T tests.
 - **Customizable Frequency:** Define how often each type of test should be performed on each disk.
-- **Parallel Testing:** Specify how many disks to test simultaneously for both short and long tests.
+- **Batch Testing:** Specify how many disks to test per run for both short and long tests.
 - **Offset Timing:** Configure waiting periods between tests to avoid overloading the system or testing too frequently.
 - **Logging:** Keep track of tests, results, and any errors in a specified log file.
 - **Email Notifications:** Receive email alerts for test failures.
@@ -39,15 +39,15 @@ The script is configured via a `smart-runner.conf` file. Here's an explanation o
 
 | Section    | Option           | Description                                                                                                                        |
 | ---------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `disks`    | (list)           | List the devices or mounts to test. Devices are listed as `/dev/sdX`. If a mount is given the disk will automatically be resolved. |
+| `disks`    | (list)           | List the devices or mounts to test. Devices are listed as `/dev/sdX` or `/dev/disk/by-id/...`. If a mount is given the disk will automatically be resolved. |
 | `database` | `file`           | Path to the file where test dates are stored.                                                                                      |
 | `short`    | `enabled`        | Set to `true` to enable short SMART tests.                                                                                         |
 |            | `frequency_days` | How often (in days) to run a short test on each disk.                                                                              |
-|            | `disks_per_run`  | Number of disks to test in parallel for short tests. Set to 0 for all.                                                             |
+|            | `disks_per_run`  | Number of disks to test per run for short tests. Disks are tested one after another. Set to 0 for all.                            |
 |            | `offset_days`    | Time to wait (in days) before running a short test on a different disk.                                                            |
 | `long`     | `enabled`        | Set to `true` to enable long SMART tests.                                                                                          |
 |            | `frequency_days` | How often (in days) to run a long test on each disk.                                                                               |
-|            | `disks_per_run`  | Number of disks to test in parallel for long tests. Set to 0 for all.                                                              |
+|            | `disks_per_run`  | Number of disks to test per run for long tests. Disks are tested one after another. Set to 0 for all.                             |
 |            | `offset_days`    | Time to wait (in days) before running a long test on a different disk.                                                             |
 | `log`      | `file`           | Path to the log file where execution details are recorded.                                                                         |
 |            | `level`          | Log level. Set to `debug` for more detailed logs.                                                                                  |
