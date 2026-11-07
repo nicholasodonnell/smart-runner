@@ -59,6 +59,131 @@ def sendTestFailureEmail(config, logger, test, disk, reason):
         logger.warning("Error sending test failure email: {}".format(e))
 
 
+def runTest(config, db, logger, test, disk):
+    try:
+        logger.info(
+            "Running {} SMART test for {}".format(test.testType.value, disk.disk)
+        )
+
+        Smart(
+            testType=test.testType.value,
+            disk=disk.disk,
+            smartScriptPath=SMART_SCRIPT_PATH,
+        ).run(
+            onOutput=logger.info,
+            onError=logger.error,
+        )
+
+        logger.info("Passed {} SMART test for {}".format(test.testType.value, disk.disk))
+    except TestFailedException as e:
+        logger.error("Failed {} SMART test for {}".format(test.testType.value, disk.disk))
+
+        sendTestFailureEmail(
+            config=config, logger=logger, test=test, disk=disk, reason=e
+        )
+    except Exception as e:
+        logger.error(
+            "Error running {} SMART test for {}: {}".format(
+                test.testType.value, disk.disk, e
+            )
+        )
+
+        sendTestFailureEmail(
+            config=config, logger=logger, test=test, disk=disk, reason=e
+        )
+    finally:
+        db.updateTestDateForDisk(
+            disk=disk.disk,
+            testType=test.testType.value,
+        )
+        disk.updateLastTestDateForTest(test=test)
+
+        logger.info("*" * 60)
+
+
+def enqueueTest(logger, test, disks):
+    for disk in disks:
+        logger.debug(
+            "Checking {} SMART test for {}...".format(test.testType.value, disk.disk)
+        )
+
+        try:
+            test.enqueueForDisk(disk=disk)
+
+            logger.debug(
+                "Enqueued {} SMART test for {}".format(test.testType.value, disk.disk)
+            )
+        except NotEnabledException:
+            logger.debug(
+                "{} SMART test not enabled, skipping...".format(test.testType.value)
+            )
+        except TestNotRequiredException:
+            logger.debug(
+                "{} SMART test not required for {} last test was ran on {}, skipping...".format(
+                    test.testType.value,
+                    disk.disk,
+                    disk.getLastTestDateForTest(test),
+                )
+            )
+        except TooManyDisksException:
+            logger.debug(
+                "Can't run {} SMART test for {} {} disk(s) have already been enqueued, skipping...".format(
+                    test.testType.value,
+                    disk.disk,
+                    test.disksPerRun,
+                )
+            )
+        except TooSoonException:
+            logger.debug(
+                "Can't run {} SMART test for {} a {} test was last ran {} day(s) ago, skipping...".format(
+                    test.testType.value,
+                    disk.disk,
+                    test.testType.value,
+                    test.daysSinceLastRun(),
+                )
+            )
+
+
+def runScheduledTests(config, db, logger, disks):
+    tests = [
+        Test(
+            testType=testType,
+            enabled=testConfig.enabled,
+            frequencyDays=testConfig.frequency_days,
+            offsetDays=testConfig.offset_days,
+            disksPerRun=testConfig.disks_per_run,
+            lastTestDate=db.getLastTestDateForTest(testType.value),
+        )
+        for testType, testConfig in [
+            (TestType.LONG, config.long),
+            (TestType.SHORT, config.short),
+        ]
+    ]
+
+    for test in tests:
+        enqueueTest(logger=logger, test=test, disks=disks)
+
+        for disk in test.enqueuedDisks():
+            runTest(config=config, db=db, logger=logger, test=test, disk=disk)
+
+
+def runOneOffTest(config, db, logger, disks, testType, diskName):
+    disk = next((disk for disk in disks if disk.disk == diskName), None)
+
+    if disk is None:
+        raise Exception(
+            "{} is not listed in the [disks] section of the config".format(diskName)
+        )
+
+    runTest(
+        config=config,
+        db=db,
+        logger=logger,
+        test=Test(testType=TestType(testType)),
+        disk=disk,
+    )
+
+
 def main():
     try:
         # held until the process exits
@@ -81,136 +206,22 @@ def main():
             )
             for disk in config.disks
         ]
-        shortTest = Test(
-            testType=TestType.SHORT,
-            enabled=config.short.enabled,
-            frequencyDays=config.short.frequency_days,
-            offsetDays=config.short.offset_days,
-            disksPerRun=config.short.disks_per_run,
-            lastTestDate=db.getLastTestDateForTest(TestType.SHORT.value),
-        )
-        longTest = Test(
-            testType=TestType.LONG,
-            enabled=config.long.enabled,
-            frequencyDays=config.long.frequency_days,
-            offsetDays=config.long.offset_days,
-            disksPerRun=config.long.disks_per_run,
-            lastTestDate=db.getLastTestDateForTest(TestType.LONG.value),
-        )
 
         logger.info("=" * 60)
         logger.info("smart-runner v{} started".format(__version__))
         logger.info("=" * 60)
 
-        for test in [longTest, shortTest]:
-            for disk in disks:
-                logger.debug(
-                    "Checking {} SMART test for {}...".format(
-                        test.testType.value,
-                        disk.disk,
-                    )
-                )
-
-                try:
-                    test.enqueueForDisk(disk=disk)
-
-                    logger.debug(
-                        "Enqueued {} SMART test for {}".format(
-                            test.testType.value,
-                            disk.disk,
-                        )
-                    )
-                except NotEnabledException as e:
-                    logger.debug(
-                        "{} SMART test not enabled, skipping...".format(
-                            test.testType.value
-                        )
-                    )
-
-                    continue
-                except TestNotRequiredException as e:
-                    logger.debug(
-                        "{} SMART test not required for {} last test was ran on {}, skipping...".format(
-                            test.testType.value,
-                            disk.disk,
-                            disk.getLastTestDateForTest(test),
-                        )
-                    )
-
-                    continue
-                except TooManyDisksException as e:
-                    logger.debug(
-                        "Can't run {} SMART test for {} {} disk(s) have already been enqueued, skipping...".format(
-                            test.testType.value,
-                            disk.disk,
-                            test.disksPerRun,
-                        )
-                    )
-
-                    continue
-                except TooSoonException as e:
-                    logger.debug(
-                        "Can't run {} SMART test for {} a {} test was last ran {} day(s) ago, skipping...".format(
-                            test.testType.value,
-                            disk.disk,
-                            test.testType.value,
-                            test.daysSinceLastRun(),
-                        )
-                    )
-
-                    continue
-
-            for disk in test.enqueuedDisks():
-                try:
-                    logger.info(
-                        "Running {} SMART test for {}".format(
-                            test.testType.value, disk.disk
-                        )
-                    )
-
-                    Smart(
-                        testType=test.testType.value,
-                        disk=disk.disk,
-                        smartScriptPath=SMART_SCRIPT_PATH,
-                    ).run(
-                        onOutput=logger.info,
-                        onError=logger.error,
-                    )
-
-                    logger.info(
-                        "Passed {} SMART test for {}".format(
-                            test.testType.value, disk.disk
-                        )
-                    )
-                except TestFailedException as e:
-                    logger.error(
-                        "Failed {} SMART test for {}".format(
-                            test.testType.value, disk.disk
-                        )
-                    )
-
-                    sendTestFailureEmail(
-                        config=config, logger=logger, test=test, disk=disk, reason=e
-                    )
-                except Exception as e:
-                    logger.error(
-                        "Error running {} SMART test for {}: {}".format(
-                            test.testType.value, disk.disk, e
-                        )
-                    )
-
-                    sendTestFailureEmail(
-                        config=config, logger=logger, test=test, disk=disk, reason=e
-                    )
-                finally:
-                    db.updateTestDateForDisk(
-                        disk=disk.disk,
-                        testType=test.testType.value,
-                    )
-                    disk.updateLastTestDateForTest(test=test)
-
-                    logger.info("*" * 60)
-
+        if args.test:
+            runOneOffTest(
+                config=config,
+                db=db,
+                logger=logger,
+                disks=disks,
+                testType=args.test,
+                diskName=args.disk,
+            )
+        else:
+            runScheduledTests(config=config, db=db, logger=logger, disks=disks)
     except Exception as e:
         print("Error: {}".format(e))
         exit(1)

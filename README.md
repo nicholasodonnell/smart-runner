@@ -76,3 +76,17 @@ The script is configured via a `smart-runner.conf` file. Here's an explanation o
    0 3 * * * /path/to/smart-runner.py --conf=/path/to/smart-runner.conf
    ```
 4. Monitor the specified log file or your email for notifications about disk health.
+
+### One-off tests
+
+Run a single test on one disk now, outside the schedule, with `--test` and `--disk`. The disk must be listed in the `[disks]` section. The run uses the same lock, log file and failure email as scheduled runs, and records the test date so the schedule counts it:
+
+```console
+/path/to/smart-runner.py --conf=/path/to/smart-runner.conf --test=long --disk=/mnt/hdd2
+```
+
+Long tests can take many hours. To keep one running after you log out, start it as a transient systemd service:
+
+```console
+sudo systemd-run --unit=smart-runner-oneoff /path/to/smart-runner.py --conf=/path/to/smart-runner.conf --test=long --disk=/mnt/hdd2
+```
